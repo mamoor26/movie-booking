@@ -57,3 +57,4 @@ Route::get('/ticket/{id}', [movieController::class, 'ticket'])->name('user.ticke
 
 
 
+// routes for mamooor
