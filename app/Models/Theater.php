@@ -6,8 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class Theater extends Model
 {
-    protected $fillable=[
-        'theater_name','location','total_seats'
-
+    protected $fillable = [
+        'theater_name',
+        'location',
+        'total_seats'
     ];
+
+    public function showtimes()
+    {
+        return $this->hasMany(Showtime::class);
+    }
 }

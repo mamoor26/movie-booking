@@ -316,6 +316,19 @@
 	<script src="{{asset('user/js/photoswipe.min.js')}}"></script>
 	<script src="{{asset('user/js/photoswipe-ui-default.min.js')}}"></script>
 	<script src="{{asset('user/js/main.js')}}"></script>
+
+@if(Auth::check())
+    <form action="{{ route('logout') }}" method="POST" style="display:inline;">
+        @csrf
+        <button type="submit" class="btn btn-danger btn-sm">
+            Logout ({{ Auth::user()->name }})
+        </button>
+    </form>
+@else
+    <a href="{{ route('loginform') }}" class="btn btn-primary btn-sm">Login</a>
+    <a href="{{ route('registerform') }}" class="btn btn-warning btn-sm">Register</a>
+@endif
+
 </body>
 
 <!-- Mirrored from https://flixgo.volkovdesign.com/main/index.html by HTTrack Website Copier/3.x [XR&CO], Fri, 23 Oct 2026 07:12:53 GMT -->

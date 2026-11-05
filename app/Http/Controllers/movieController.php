@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Showtime;
 use App\Models\Movie;
 use App\Models\User;
@@ -13,7 +14,6 @@ class movieController extends Controller
      */
     public function index()
     {
-
         return view('admin.index');
     }
 
@@ -22,8 +22,8 @@ class movieController extends Controller
      */
     public function create()
     {
-        $data=Movie::all();
-        return view('admin.fatchmovies',compact('data'));
+        $data = Movie::all();
+        return view('admin.fatchmovies', compact('data'));
     }
 
     /**
@@ -31,37 +31,43 @@ class movieController extends Controller
      */
     public function store(Request $request)
     {
+        $data = $request->all();
 
-        $data=$request->all();
-        if($request->hasFile('Trailer')){
-            $trailer=$request->file('Trailer')->store('trailer_folder','public');
-            $data['Trailer']=basename($trailer);
-
+        // Upload Trailer (only if file is selected)
+        if ($request->hasFile('Trailer')) {
+            $trailer = $request->file('Trailer')->store('trailer_folder', 'public');
+            $data['Trailer'] = basename($trailer);
         }
-        $poster=$request->file('Poster')->store('poster_folder','public');
-            $data['Poster']=basename($poster);
+
+        // Upload Poster (only if file is selected)
+        if ($request->hasFile('Poster')) {
+            $poster = $request->file('Poster')->store('poster_folder', 'public');
+            $data['Poster'] = basename($poster);
+        }
 
         Movie::create($data);
-         return redirect()->Route('movie.index');
+
+        return redirect()->Route('movie.index');
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified resource (Movie Details page for user).
      */
     public function show(string $id)
-{
-    $movie = Movie::findOrFail($id);
+    {
+        // Load movie with its reviews and the user who wrote each review
+        $movie = Movie::with('reviews.user')->findOrFail($id);
 
-    return view('user.details', compact('movie'));
-}
+        return view('user.details', compact('movie'));
+    }
 
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        $info=Movie::findOrFail($id);
-        return view('admin.editmovies',compact('info'));
+        $info = Movie::findOrFail($id);
+        return view('admin.editmovies', compact('info'));
     }
 
     /**
@@ -69,18 +75,24 @@ class movieController extends Controller
      */
     public function update(Request $request, string $id)
     {
-         $data=$request->all();
-        if($request->hasFile('Trailer')){
-            $trailer=$request->file('Trailer')->store('trailer_folder','public');
-            $data['Trailer']=basename($trailer);
+        $data = $request->all();
 
+        // Upload Trailer (only if new file is selected)
+        if ($request->hasFile('Trailer')) {
+            $trailer = $request->file('Trailer')->store('trailer_folder', 'public');
+            $data['Trailer'] = basename($trailer);
         }
-        $poster=$request->file('Poster')->store('poster_folder','public');
-            $data['Poster']=basename($poster);
-            $result= Movie::findOrFail($id);
 
+        // Upload Poster (only if new file is selected)
+        if ($request->hasFile('Poster')) {
+            $poster = $request->file('Poster')->store('poster_folder', 'public');
+            $data['Poster'] = basename($poster);
+        }
+
+        $result = Movie::findOrFail($id);
         $result->update($data);
-         return redirect()->Route('movie.create');
+
+        return redirect()->Route('movie.create');
     }
 
     /**
@@ -88,20 +100,22 @@ class movieController extends Controller
      */
     public function destroy(string $id)
     {
-        $data=Movie::findOrFail($id);
+        $data = Movie::findOrFail($id);
         Movie::destroy($data->id);
-          return redirect()->Route('movie.create');
 
+        return redirect()->Route('movie.create');
     }
 
+    // Show Ticket / Showtime selection page for user
     public function ticket($id)
-{
-    $movie = Movie::findOrFail($id);
+    {
+        $movie = Movie::findOrFail($id);
 
-    $showtimes = Showtime::with('theater')
-        ->where('movie_id', $id)
-        ->get();
+        // Load showtimes with theater and bookings (so we can show booked seats)
+        $showtimes = Showtime::with(['theater', 'bookings'])
+            ->where('movie_id', $id)
+            ->get();
 
-    return view('user.ticket', compact('movie', 'showtimes'));
-}
+        return view('user.ticket', compact('movie', 'showtimes'));
+    }
 }
